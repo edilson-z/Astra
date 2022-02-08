@@ -10,9 +10,14 @@ window.onload = function (){
     let p = document.querySelector("h1");
 
     // Setting the canvas width and heigt to the same width and height of the device.
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
     canvas.style.background = "black";
+
+    window.addEventListener("resize", () =>{
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+    })
 
     // Creating player class to allow for different players.
     class Player{
@@ -121,7 +126,7 @@ window.onload = function (){
         move(){
             //ctx.clearRect(this.x,this.y, this.r*2, this.r*2);
             this.draw();
-            this.x -= 10;
+            this.x -= 5;
         }
     }
     
@@ -165,7 +170,7 @@ window.onload = function (){
             
         }
     });
-    // Event listeners to create a projectiles.
+    // Event listeners to create projectiles (Desktop).
     window.addEventListener("keydown", (event) => {
         switch (event.code){
             case "Space": 
@@ -174,6 +179,13 @@ window.onload = function (){
                     projectile.y = player.y;
                     break;
         }
+    });
+
+    // Event listeners to create projectiles (Mobile).
+    window.addEventListener("touchstart", () => {
+        projectiles.push(new Projectile(player.x + player.w + 10,player.y + 10, 10, 10, "yellow", 10));
+        projectile.x = player.x;
+        projectile.y = player.y;
     });
     
     //Creating Enemies.
@@ -193,6 +205,27 @@ window.onload = function (){
         animateId = requestAnimationFrame(animate); 
         ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
         ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        //Mobile responsiveness
+        if (canvas.width <= 600){
+            //js.style.display = "flex";
+            //elem.style.display = "inline";
+            //Drawing the joystick
+            ctx.beginPath();
+            ctx.arc(player.x,player.y,10,0,2*Math.PI);
+            ctx.fill();
+
+            //Joystick mechanics
+            player.x += 7*js.x;  
+            player.y += 7*js.y;
+
+            //Player boundaries for mobile
+            if(player.x >= canvas.width-player.w){player.x = canvas.width-player.w;}
+            if(player.x <= 0){player.x = 0;}
+            if(player.y >= canvas.height-player.h){player.y = canvas.height-player.h;}
+            if(player.y <= 0){player.y = 0;}
+        }
+        
 
         //Removing projectiles if they leave the canvas.
         projectiles.forEach((projectile, i) => {
@@ -284,4 +317,141 @@ window.onload = function (){
         animate();
         menu.style.display = "none";
     }
+
+    /*
+    ===================================================================================================================================
+                                                            JOYSTICK
+    ===================================================================================================================================
+    */
+
+    /*++++++++++++++++++++++
+    + Joystick constructor +
+    ++++++++++++++++++++++*/
+    
+    var Joystick = function(opts){ 
+    
+        opts = opts || {};
+        
+        this.x = 0; 
+        this.y = 0;
+        this.isPressed = false;
+        
+        var elem = document.createElement("div");
+        
+        elem.style.position = "fixed";
+        elem.style.margin  = "auto";
+        elem.style.background = "rgba(0,0,0,0.1)";
+        elem.style.boxShadow = "2px 3px 5px rgba(0,0,0,0.25)";
+        elem.style.borderRadius = "5px";
+        elem.style.zIndex = "100";
+        elem.style.width = opts.width || "100px";
+        elem.style.height = opts.height || "100px";
+        elem.style.top = opts.top || "auto";
+        elem.style.bottom = opts.bottom || "10px";
+        elem.style.left = opts.left || "0";
+        elem.style.right = opts.right || "0";
+        //elem.style.display = "none";
+
+        document.body.appendChild(elem);
+        
+        var rect = elem.getBoundingClientRect();
+        
+        var stick = document.createElement("div");
+        
+        if(rect.width <= rect.height){
+        stick.style.width = Math.round(0.8*rect.width)+"px";
+        stick.style.height = Math.round(0.8*rect.width)+"px";
+        }else{
+        stick.style.width = Math.round(0.8*rect.height)+"px";
+        stick.style.height = Math.round(0.8*rect.height)+"px";
+        }
+        
+        stick.style.borderRadius = "50%";
+        stick.style.background = "rgba(0,0,0,0.5)";
+        
+        stick.style.boxShadow = "2px 3px 5px rgba(0,0,0,0.45), inset 5px 5px 15px lightgray, inset -5px -5px 15px rgba(0,0,0,0.75)";
+        
+        stick.style.margin = "auto"
+        stick.style.position = "fixed";
+        stick.style.top = Math.round(rect.top+(0.1*rect.height))+"px";
+        stick.style.bottom = "auto";
+        stick.style.left = Math.round(rect.left+(0.1*rect.width))+"px";
+        stick.style.right = "auto";
+        stick.style.zIndex = "12";
+        //stick.style.display = "none";
+        
+        elem.appendChild(stick);
+        
+        var srect = stick.getBoundingClientRect();
+        
+        
+        elem.addEventListener("touchstart",(e)=>{
+        e.preventDefault();
+        
+        stick.style.top = Math.round(e.targetTouches[0].clientY-(srect.height/2))+"px";
+        stick.style.left = Math.round(e.targetTouches[0].clientX-(srect.width/2))+"px";
+        
+        var tempX = (e.targetTouches[0].clientX-rect.left-(rect.width/2))/(rect.width/2);
+        var tempY = (e.targetTouches[0].clientY-rect.top-(rect.height/2))/(rect.height/2);
+        
+        this.x = (opts.limitX && Math.abs(tempX) > opts.limitX)?Math.sign(tempX)*opts.limitX : tempX;
+        this.y = (opts.limitY && Math.abs(tempY) > opts.limitY)?Math.sign(tempY)*opts.limitY : tempY;
+        this.isPressed = true;
+        
+        if(opts.cbStart){opts.cbStart();}
+        
+        },false);
+        
+        
+        elem.addEventListener("touchmove",(e)=>{
+        e.preventDefault();
+        
+        stick.style.top = Math.round(e.targetTouches[0].clientY-(srect.height/2))+"px";
+        stick.style.left = Math.round(e.targetTouches[0].clientX-(srect.width/2))+"px";
+        
+        var tempX = (e.targetTouches[0].clientX-rect.left-(rect.width/2))/(rect.width/2);
+        var tempY = (e.targetTouches[0].clientY-rect.top-(rect.height/2))/(rect.height/2);
+        
+        this.x = (opts.limitX && Math.abs(tempX) > opts.limitX)?Math.sign(tempX)*opts.limitX : tempX;
+        this.y = (opts.limitY && Math.abs(tempY) > opts.limitY)?Math.sign(tempY)*opts.limitY : tempY;
+        
+        if(opts.cbMove){opts.cbMove();}
+        
+        },false);
+        
+        
+        elem.addEventListener("touchend",(e)=>{
+        e.preventDefault();
+        
+        stick.style.top = Math.round(rect.top+(0.1*rect.height))+"px";
+        stick.style.left = Math.round(rect.left+(0.1*rect.width))+"px";
+        
+        this.isPressed = false;
+        this.x = 0;
+        this.y = 0;
+        
+        if(opts.cbEnd){opts.cbEnd();}
+        
+        },false);
+        
+        }
+        
+        /*++++++++++++++++++++++
+        +	End constructor   +
+        ++++++++++++++++++++++*/
+        
+    //define options if you want, all are optional
+    var options = {
+        width: "80px", // css width
+        height: "80px", // css height
+        left: "20px", // css left
+        right: "auto", // css right
+        top: "auto", // css top
+        bottom: "20px", // css bottom
+        limitX: 0.5, // limit the magnitude of X
+        limitY: 0.5 // limit the magnitude of Y
+        //,cbStart: loop // function that will fire when touchstart event fires. Can also define cbMove and cbEnd for touchmove and touchend events.
+    }
+    // create a new joystick object with or without options
+    js = new Joystick(options);
 }
