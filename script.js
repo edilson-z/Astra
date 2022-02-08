@@ -443,7 +443,7 @@ window.onload = function (){
         top: "auto", // css top
         bottom: "20px", // css bottom
         limitX: 0.5, // limit the magnitude of X
-        limitY: 0.5 // limit the magnitude of Y
+        limitY: 1 // limit the magnitude of Y
         //,cbStart: loop // function that will fire when touchstart event fires. Can also define cbMove and cbEnd for touchmove and touchend events.
     }
     // create a new joystick object with or without options
