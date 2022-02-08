@@ -1,7 +1,4 @@
 window.onload = function (){
-    let audio = document.getElementById("audio");
-    audio.play();
-    audio.style.left = -100000;
     // Creating a canvas variable and adding context to it.
     let canvas = document.querySelector("canvas");
     let ctx = canvas.getContext("2d");
@@ -261,7 +258,7 @@ window.onload = function (){
                 cancelAnimationFrame(animateId);
             } 
             //Detecting if enemy leaves the canvas.
-            if (enemy.x == 0){
+            if (enemy.x <= 0){
                 //Displaying the menu
                 menu.style.display = "flex";
                 p.innerHTML = score;
@@ -329,7 +326,7 @@ window.onload = function (){
     ++++++++++++++++++++++*/
     
     var Joystick = function(opts){ 
-    
+
         opts = opts || {};
         
         this.x = 0; 
@@ -350,8 +347,7 @@ window.onload = function (){
         elem.style.bottom = opts.bottom || "10px";
         elem.style.left = opts.left || "0";
         elem.style.right = opts.right || "0";
-        //elem.style.display = "none";
-
+        
         document.body.appendChild(elem);
         
         var rect = elem.getBoundingClientRect();
@@ -378,7 +374,6 @@ window.onload = function (){
         stick.style.left = Math.round(rect.left+(0.1*rect.width))+"px";
         stick.style.right = "auto";
         stick.style.zIndex = "12";
-        //stick.style.display = "none";
         
         elem.appendChild(stick);
         
@@ -386,6 +381,7 @@ window.onload = function (){
         
         
         elem.addEventListener("touchstart",(e)=>{
+        
         e.preventDefault();
         
         stick.style.top = Math.round(e.targetTouches[0].clientY-(srect.height/2))+"px";
@@ -404,7 +400,6 @@ window.onload = function (){
         
         
         elem.addEventListener("touchmove",(e)=>{
-        e.preventDefault();
         
         stick.style.top = Math.round(e.targetTouches[0].clientY-(srect.height/2))+"px";
         stick.style.left = Math.round(e.targetTouches[0].clientX-(srect.width/2))+"px";
@@ -421,7 +416,6 @@ window.onload = function (){
         
         
         elem.addEventListener("touchend",(e)=>{
-        e.preventDefault();
         
         stick.style.top = Math.round(rect.top+(0.1*rect.height))+"px";
         stick.style.left = Math.round(rect.left+(0.1*rect.width))+"px";
